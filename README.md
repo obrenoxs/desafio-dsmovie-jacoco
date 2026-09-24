@@ -1,10 +1,11 @@
 # 🎬 DSMovie — Testes Unitários com JUnit, Mockito e Jacoco
 
-![Java](https://img.shields.io/badge/Java-25-orange)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.6-brightgreen)
+![Java](https://img.shields.io/badge/Java-17-orange)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.0.0-brightgreen)
 ![JUnit](https://img.shields.io/badge/JUnit-5-25A162)
 ![Mockito](https://img.shields.io/badge/Mockito-mocks-blue)
-![Jacoco](https://img.shields.io/badge/Jacoco-0.8.14-red)
+![Jacoco](https://img.shields.io/badge/Jacoco-0.8.7-red)
+![Coverage](https://img.shields.io/badge/Cobertura-100%25-brightgreen)
 
 Implementação dos **testes unitários da camada de service** do projeto DSMovie, com cobertura de código medida pelo **Jacoco**.
 
@@ -19,6 +20,7 @@ O objetivo é implementar todos os testes unitários de service do DSMovie, isol
 - **15 cenários** de teste: 9 em `MovieService`, 2 em `ScoreService` e 4 em `UserService`
 - **Mínimo para aprovação:** 12 dos 15 testes
 - **Meta de cobertura:** pelo menos **90%** reportados pelo Jacoco com todos os testes
+
 
 ### Competências trabalhadas
 
@@ -54,13 +56,15 @@ O DSMovie é uma API REST de filmes e avaliações de filmes.
 
 ## 🛠️ Tecnologias
 
-- **Java 25**
-- **Spring Boot 4.0.6** (Web MVC, Data JPA, Validation)
-- **Spring Security** com OAuth2 Authorization Server e Resource Server (JWT)
+- **Java 17**
+- **Spring Boot 3.0.0** (Web, Data JPA, Validation)
+- **Spring Security** com OAuth2 Authorization Server (1.0.0) e Resource Server (JWT)
 - **Banco H2** em memória (perfil `test`)
-- **JUnit 5** e **Mockito** para testes
-- **Jacoco 0.8.14** para cobertura de código
+- **JUnit 5** e **Mockito** para testes (via `spring-boot-starter-test`)
+- **Jacoco 0.8.7** para cobertura de código
 - **Maven**
+
+> O projeto usa as mesmas versões do curso (Spring Boot 3.0.0 e Java 17). Nessas versões, `@Mock` e `@InjectMocks` funcionam junto com `SpringExtension`, que é o padrão adotado nas aulas.
 
 ---
 
@@ -68,27 +72,35 @@ O DSMovie é uma API REST de filmes e avaliações de filmes.
 
 ### MovieServiceTests
 
-- [ ] `findAllShouldReturnPagedMovieDTO`
-- [ ] `findByIdShouldReturnMovieDTOWhenIdExists`
-- [ ] `findByIdShouldThrowResourceNotFoundExceptionWhenIdDoesNotExist`
-- [ ] `insertShouldReturnMovieDTO`
-- [ ] `updateShouldReturnMovieDTOWhenIdExists`
-- [ ] `updateShouldThrowResourceNotFoundExceptionWhenIdDoesNotExist`
-- [ ] `deleteShouldDoNothingWhenIdExists`
-- [ ] `deleteShouldThrowResourceNotFoundExceptionWhenIdDoesNotExist`
-- [ ] `deleteShouldThrowDatabaseExceptionWhenDependentId`
+- [x] `findAllShouldReturnPagedMovieDTO`
+- [x] `findByIdShouldReturnMovieDTOWhenIdExists`
+- [x] `findByIdShouldThrowResourceNotFoundExceptionWhenIdDoesNotExist`
+- [x] `insertShouldReturnMovieDTO`
+- [x] `updateShouldReturnMovieDTOWhenIdExists`
+- [x] `updateShouldThrowResourceNotFoundExceptionWhenIdDoesNotExist`
+- [x] `deleteShouldDoNothingWhenIdExists`
+- [x] `deleteShouldThrowResourceNotFoundExceptionWhenIdDoesNotExist`
+- [x] `deleteShouldThrowDatabaseExceptionWhenDependentId`
 
 ### ScoreServiceTests
 
-- [ ] `saveScoreShouldReturnMovieDTO`
-- [ ] `saveScoreShouldThrowResourceNotFoundExceptionWhenNonExistingMovieId`
+- [x] `saveScoreShouldReturnMovieDTO`
+- [x] `saveScoreShouldThrowResourceNotFoundExceptionWhenNonExistingMovieId`
 
 ### UserServiceTests
 
-- [ ] `authenticatedShouldReturnUserEntityWhenUserExists`
-- [ ] `authenticatedShouldThrowUsernameNotFoundExceptionWhenUserDoesNotExists`
-- [ ] `loadUserByUsernameShouldReturnUserDetailsWhenUserExists`
-- [ ] `loadUserByUsernameShouldThrowUsernameNotFoundExceptionWhenUserDoesNotExists`
+- [x] `authenticatedShouldReturnUserEntityWhenUserExists`
+- [x] `authenticatedShouldThrowUsernameNotFoundExceptionWhenUserDoesNotExists`
+- [x] `loadUserByUsernameShouldReturnUserDetailsWhenUserExists`
+- [x] `loadUserByUsernameShouldThrowUsernameNotFoundExceptionWhenUserDoesNotExists`
+
+### Como os testes foram escritos
+
+- Cada service é testado **isolado**, com as dependências substituídas por mocks (`@Mock`) e injetadas no service testado (`@InjectMocks`)
+- O comportamento dos mocks é definido no `@BeforeEach`, e cada teste verifica o resultado do service
+- Cenários de exceção usam `assertThrows`, e o cenário "não faz nada" do `delete` usa `assertDoesNotThrow` junto com `verify`
+- Métodos `void` do repository (como o `deleteById`) são simulados com `doThrow(...).when(...)`
+- No `ScoreService`, o filme usado no teste já traz um score no conjunto de avaliações, para que o cálculo da média seja exercitado
 
 ### Estrutura dos testes
 
@@ -110,7 +122,7 @@ As classes do pacote `tests` são factories que centralizam a criação dos obje
 
 ## 🚀 Como executar
 
-**Pré-requisitos:** JDK 25 e Maven instalados.
+**Pré-requisitos:** JDK 17 e Maven instalados.
 
 ```bash
 # clonar o repositório
@@ -133,6 +145,18 @@ mvn spring-boot:run
 ```
 
 A API sobe com o perfil `test` (H2 em memória), e o console do H2 fica disponível em `/h2-console`.
+
+### Variáveis de ambiente
+
+Todas têm valor padrão para desenvolvimento local:
+
+| Variável | Descrição |
+|----------|-----------|
+| `APP_PROFILE` | Perfil ativo do Spring (padrão: `test`) |
+| `CORS_ORIGINS` | Origens permitidas no CORS, separadas por vírgula |
+| `CLIENT_ID` | Client id do OAuth2 |
+| `CLIENT_SECRET` | Client secret do OAuth2 |
+| `JWT_DURATION` | Duração do token, em segundos |
 
 ---
 
